@@ -105,6 +105,7 @@ public enum GpuUtils {
         AvLog.e("glError:"+code+"---"+index);
     }
 
+
     public static int createTextureID(boolean isOes) {
         int target= GLES20.GL_TEXTURE_2D;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {

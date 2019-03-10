@@ -73,11 +73,11 @@ public class FrameBuffer {
     public int createFrameBuffer(boolean hasRenderBuffer,int width,int height,int texType,int texFormat,
                                  int minParams,int maxParams,int wrapS,int wrapT){
         mFrameTemp=new int[4];
-        GLES20.glGenFramebuffers(1,mFrameTemp,0);
-        GLES20.glGenTextures(1,mFrameTemp,1);
-        GLES20.glBindTexture(texType,mFrameTemp[1]);
+        GLES20.glGenFramebuffers(1,mFrameTemp,0);//创建一个帧染缓冲区对象
+        GLES20.glGenTextures(1,mFrameTemp,1);//生成纹理的函数。函数根据纹理参数返回n个纹理索引
+        GLES20.glBindTexture(texType,mFrameTemp[1]);//将该渲染缓冲区对象绑定到管线上
         GLES20.glTexImage2D(texType, 0,texFormat, width, height,
-                0, texFormat, GLES20.GL_UNSIGNED_BYTE, null);
+                0, texFormat, GLES20.GL_UNSIGNED_BYTE, null);//生成一个2D纹理
         //设置缩小过滤为使用纹理中坐标最接近的一个像素的颜色作为需要绘制的像素颜色
         GLES20.glTexParameteri(texType, GLES20.GL_TEXTURE_MIN_FILTER,minParams);
         //设置放大过滤为使用纹理中坐标最接近的若干个颜色，通过加权平均算法得到需要绘制的像素颜色

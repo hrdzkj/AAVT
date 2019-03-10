@@ -38,7 +38,6 @@ public interface ITextureProvider {
 
     /**
      * 获取一帧数据
-     * @return 是否最后一帧
      */
     boolean frame();
 

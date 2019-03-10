@@ -16,8 +16,6 @@ package com.wuwang.aavt.media;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.wuwang.aavt.log.AvLog;
 
@@ -122,7 +120,8 @@ public class CameraProvider implements ITextureProvider {
     @Override
     public boolean frame() {
         try {
-            mFrameSem.acquire();
+            mFrameSem.acquire(); // acquire()获取一个许可，如果没有就等待,直到有一个许可证可以获得然后拿走一个许可证
+            return true;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -144,8 +143,8 @@ public class CameraProvider implements ITextureProvider {
         @Override
         public void onFrameAvailable(SurfaceTexture surfaceTexture) {
             AvLog.d(tag,"onFrameAvailable");
-            mFrameSem.drainPermits();
-            mFrameSem.release();
+            mFrameSem.drainPermits();//可获取并返回立即可用的所有许可个数，并且将可用许可置0。
+            mFrameSem.release();//每个release方法增加一个许可证，这可能会释放一个阻塞的acquire方法。
         }
 
     };

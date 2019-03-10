@@ -19,7 +19,6 @@ import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.os.Build;
-import android.util.Log;
 
 import com.wuwang.aavt.core.IObserver;
 import com.wuwang.aavt.core.Observable;
@@ -102,12 +101,16 @@ public class VideoSurfaceProcessor{
 
     private void glRun(){
         EglHelper egl=new EglHelper();
+        // 选择Config、构造Surface来创建EGLContext
         boolean ret=egl.createGLESWithSurface(new EGLConfigAttrs(),new EGLContextAttrs(),new SurfaceTexture(1));
         if(!ret){
             //todo 错误处理
             return;
         }
+
+        //生成纹理并绑定到目标
         int mInputSurfaceTextureId = GpuUtils.createTextureID(true);
+        //生成一个SurfaceTexture,让摄像头把数据绘制到一个OpenGL的纹理mInputSurfaceTextureId
         SurfaceTexture mInputSurfaceTexture = new SurfaceTexture(mInputSurfaceTextureId);
 
         Point size=mProvider.open(mInputSurfaceTexture);
@@ -148,9 +151,10 @@ public class VideoSurfaceProcessor{
         rb.threadId=Thread.currentThread().getId();
         AvLog.d(TAG,"Processor While Loop Entry");
         //要求数据源必须同步填充SurfaceTexture，填充完成前等待
-        while (!mProvider.frame()&&mGLThreadFlag){
-            mInputSurfaceTexture.updateTexImage();
-            mInputSurfaceTexture.getTransformMatrix(mRenderer.getTextureMatrix());
+        // mProvider.frame()带有信号量
+        while (mProvider.frame()&&mGLThreadFlag){  // SurfaceTexture收到数据
+            mInputSurfaceTexture.updateTexImage(); // 更新纹理图像为从图像流中提取的最近一帧
+            mInputSurfaceTexture.getTransformMatrix(mRenderer.getTextureMatrix()); //矩阵转换
             AvLog.d(TAG,"timestamp:"+ mInputSurfaceTexture.getTimestamp());
             sourceFrame.bindFrameBuffer(mSourceWidth, mSourceHeight);
             GLES20.glViewport(0,0, mSourceWidth, mSourceHeight);
