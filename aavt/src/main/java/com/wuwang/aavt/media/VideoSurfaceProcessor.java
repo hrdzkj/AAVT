@@ -154,7 +154,9 @@ public class VideoSurfaceProcessor{
         // mProvider.frame()带有信号量
         while (mProvider.frame()&&mGLThreadFlag){  // SurfaceTexture收到数据
             mInputSurfaceTexture.updateTexImage(); // 更新纹理图像为从图像流中提取的最近一帧
-            mInputSurfaceTexture.getTransformMatrix(mRenderer.getTextureMatrix()); //矩阵转换
+            、          //每次updateTexImage()被调用时，纹理矩阵都可能发生变化矩阵转换，
+            //getTransformMatrix()得到的矩阵，将OpenGL ES纹理坐标列向量(s,t,0,1)转换为纹理流中正确的采样位置。
+            mInputSurfaceTexture.getTransformMatrix(mRenderer.getTextureMatrix()); 
             AvLog.d(TAG,"timestamp:"+ mInputSurfaceTexture.getTimestamp());
             sourceFrame.bindFrameBuffer(mSourceWidth, mSourceHeight);
             GLES20.glViewport(0,0, mSourceWidth, mSourceHeight);
