@@ -133,3 +133,6 @@ SurfaceTexture的getTransformMatrix方法可以获取到图像数据流的坐标
 
 色器程序控制渲染流程：坐标变换(顶点着色器）--->图元装配--->构造出新图元(几何着色器)
 --->映射像素(光栅化)--->裁切(片段着色器)--->测试和混合
+
+void glBindFramebuffer(GLenum target, GLuint id)
+第一个参数target应该是GL_FRAMEBUFFER，第二个参数是FBO的ID号。一旦FBO被绑定，之后的所有的OpenGL操作都会对当前所绑定的FBO造成影响。ID号为0表示缺省帧缓存，即默认的window提供的帧缓存。因此，在glBindFramebuffer()中将ID号设置为0可以解绑定当前FBO。

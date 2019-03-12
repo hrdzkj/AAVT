@@ -72,8 +72,8 @@ public class FrameBuffer {
      */
     public int createFrameBuffer(boolean hasRenderBuffer,int width,int height,int texType,int texFormat,
                                  int minParams,int maxParams,int wrapS,int wrapT){
-        mFrameTemp=new int[4];
-        GLES20.glGenFramebuffers(1,mFrameTemp,0);//创建一个帧染缓冲区对象
+        mFrameTemp=new int[4]; //[帧染缓冲区名][纹理名][渲染用的纹理名][原帧缓冲区]
+        GLES20.glGenFramebuffers(1,mFrameTemp,0);//生成一个帧染缓冲区对象名
         GLES20.glGenTextures(1,mFrameTemp,1);//生成纹理的函数。函数根据纹理参数返回n个纹理索引
         GLES20.glBindTexture(texType,mFrameTemp[1]);//将该渲染缓冲区对象绑定到管线上
         GLES20.glTexImage2D(texType, 0,texFormat, width, height,
@@ -86,11 +86,13 @@ public class FrameBuffer {
         GLES20.glTexParameteri(texType, GLES20.GL_TEXTURE_WRAP_S,wrapS);
         //设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
         GLES20.glTexParameteri(texType, GLES20.GL_TEXTURE_WRAP_T,wrapT);
-
+        //glGetIntegerv:第一个参数，表示你要得到什么状态的值,第二个参数即输出这个值
         GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING,mFrameTemp,3);
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER,mFrameTemp[0]);
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
-                texType, mFrameTemp[1], 0);
+        
+         //texType纹理到FBO上，后续的绘制动作就会存储FBO上
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER,mFrameTemp[0]); //指的是你要把FBO与哪种帧缓冲区进行绑定
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,texType, mFrameTemp[1], 0);
+        
         if(hasRenderBuffer){
             GLES20.glGenRenderbuffers(1,mFrameTemp,2);
             GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER,mFrameTemp[2]);
@@ -114,7 +116,7 @@ public class FrameBuffer {
     }
 
     /**
-     * 取消FrameBuffer绑定
+           *  取消FrameBuffer绑定,恢复默认的帧缓冲区
      */
     public void unBindFrameBuffer(){
         if(mFrameTemp!=null){
