@@ -1,0 +1,31 @@
+术语“窗口” 表示预期的用途，但请记住，输出可能不会出现在显示器上。
+我们通常说的纹理，指的是一张二维的图片，把它像贴纸一样贴在什么东西上面，让那个东西看起来像我们贴纸所要表现的东西那样。
+
+camera--->mInputSurfaceTexture onFrameAvaliable updateTexImage------>texture
+                                                                      /|\
+                                                                       |
+                                                                       |FBO支持将一个纹理绑定到 FBO 上，接着后续所有的渲染操作会被存储到纹理图像上。
+                                                                       |
+                                                                                                                                               自定义FBO(默认的帧缓冲区)
+
+
+openggl---->驱动--->gpu管线\n                  渲染管线的最终目的地就是帧缓冲区,
+
+                       BufferQueue
+GLES--->绘制EGLSurface-------------->（可以没有）Surface的生产者接口    是上面的帧缓冲区吗？
+                                                   |
+                                                   |进行实际意义上的缓冲地址交换，实现eglSwapBuffers的标准
+                                                   |
+                                                  \|/
+                                                 eglSwapBuffers(mDisplay, mSurface)
+
+
+最终流程:
+从绘制三角形学习：https://blog.csdn.net/tong5956/article/details/82855046
+APP/cup--->opengl es接口调用/GPU------->显示屏
+useProgram管线---->设置视口----->绘制(EGLES)---->最终交换缓存 ????? 管线的流程执行完了就可以了。
+
+编译---链接----执行
+GLES20.glDrawXXX完成绘制
+
+
