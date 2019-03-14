@@ -54,7 +54,7 @@ semaphore.release();释放一个许可(在释放许可之前，必须先获获�
 new Semaphore(0)---暂时理解，不允许有线程能同时访问
 
 
-surface用来接收摄像头或者其他地方获取到的视频。
+
 
 中间层的思想：
 OpenGL ES 定义了一个渲染图形的 API。它没有定义窗口系统。
@@ -88,21 +88,38 @@ OpenGL 本身只专注于渲染流程，核心就是 Pipeline(管线)的处理.
 如果没有 EGL 提供的渲染上下文，则 OpenGL 无法执行.
 GLSurfaceView已经包含了EGL这一块
 
-运行OpenGL程序需要创建OpenGLContext，即EGLContext，而GLSurfaceView的伟大之处就在于它为我们创建了运行所需的上下文环境和渲染线程，GLSurfaceView.Renderer的三个回调方法就运行在OpenGL环境中，省去了复杂和冗长的OpenGL上下文环境的创建过程。
-所以使用GLSurfaceView非常简单，只要实现GLSurfaceView.Renderer接口就好了，然后通过GLSurfaceView.setRenderer(GLSurfaceView.Render renderer)方法把实现的接口传到GLSurfaceView即可
-
-
 
 共享texture:surfaceView预览和glSurfaceView共享texture 。本地窗口和opengl渲染共享纹理texture
-Surface本质上是一个Native Window, 并且保存着需要在屏幕上显示的数据,是一个raw buffer的句柄，通过它去管理一个raw buffer
-Texture应该是属于opengl的概念
-SurfaceView=Surface+View 
-             类似于surface是表，surfaceView是试图，SurfaceHolder是Surface的监听器，触发器是表的监听器。  
-             mCamera.setSurface()
-GLSurfaceView=从Android 1.5(API level 3)开始加入,EGL+SurfaceView;
-SurfaceTexture=从Android 3.0(API level 11)加入,和SurfaceView不同的是，它对图像流的处理并不直接显示，而是转为GL外部纹理，因此可用于图像流数据的二次处理（如Camera滤镜，桌面特效等）
 
-流程：
+SurfaceView=Surface+View 
+              
+             mCamera.setSurface()
+
+1.）如何归一坐标转换到屏幕坐标：
+投影变换和视口变换合起来才决定场景如何映射到屏幕上
+Matrix.orthoM
+正交投影(Orthographic Projection)：
+	/**
+	 * 第三步 ： 根据屏幕的width 和 height 创建投影矩阵 https://blog.csdn.net/b1480521874/article/details/54292754
+	 * @param width
+	 * @param height
+	 */
+	 public void projectionMatrix(int width,int height){
+		 final float aspectRatio = width > height ?
+				 (float) width / (float) height :
+			     (float) height / (float) width;
+		 if(width > height){
+			 Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+		 }else{
+			 Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+		 }
+	}
+有两个函数可以生成透视投影矩阵frustumM和perspectiveM	
+	
+将摄像机矩阵, 投影矩阵, 着色矩阵相乘, 就是最终矩阵;Matrix.multiplyMM
+
+
+2.）流程：
 应用程序会先创建一个SurfaceTexture，然后将SurfaceTexture传递给图形生产者对象（比如Camera，通过调用setPreviewTexture传递），图形生产者对象生产一帧数据后，会回调onFrameAvailable通知应用程序有新的图像数据可以使用，
 思路：
 c层实现：雷神和其他 1.完成后再进行转码添加水印  2.压缩也转移到获取avpacket的地方。
@@ -113,14 +130,16 @@ java层实现：湖广午王 https://blog.csdn.net/junzia/article/details/779246
           https://blog.csdn.net/STN_LCD/article/details/74926376
 共享纹理：https://blog.csdn.net/cmshao/article/details/80060546
       https://cloud.tencent.com/developer/article/1369883
-
+      
+绘制三角形https://github.com/tong123/OpenGLTriangle  熟悉glsl 已经fork
+     解释https://www.cnblogs.com/designyourdream/p/6739413.html
 
 应用程序就可以调用updateTexImage将图像数据先送到Texture，之后就可以调用opengl接口做些具体的业务了。
 Camera-->SurfaceTexture--->OnFrameAvailableListener--->updateTexImage
 
 OnDrawFrame方法中将更新后的纹理渲染到屏幕。
 
-SurfaceTexture和OpenGL ES一起使用可以创造出无限可能。
+SurfaceTexture，和SurfaceView不同的是，它对图像流的处理并不直接显示，而是转为GL外部纹理，因此可用于图像流数据的二次处理（如Camera滤镜，桌面特效等），和OpenGL ES一起使用可以创造出无限可能。
 SurfaceTexture的updateTexImage方法会更新接收到的预览数据到其绑定的OpenGL纹理中。此方法只能在生成该纹理的OpenGL线程中调用。
 SurfaceTexture.setOnFrameAvailableListener
 SurfaceView.getHolder().addCallback
@@ -133,6 +152,7 @@ SurfaceTexture的getTransformMatrix方法可以获取到图像数据流的坐标
 
 色器程序控制渲染流程：坐标变换(顶点着色器）--->图元装配--->构造出新图元(几何着色器)
 --->映射像素(光栅化)--->裁切(片段着色器)--->测试和混合
+在现代OpenGL中，我们必须定义至少一个顶点着色器和一个片段着色器（因为GPU中没有默认的顶点/片段着色器）。 
 
 void glBindFramebuffer(GLenum target, GLuint id)
 第一个参数target应该是GL_FRAMEBUFFER，第二个参数是FBO的ID号。一旦FBO被绑定，之后的所有的OpenGL操作都会对当前所绑定的FBO造成影响。ID号为0表示缺省帧缓存，即默认的window提供的帧缓存。因此，在glBindFramebuffer()中将ID号设置为0可以解绑定当前FBO。
