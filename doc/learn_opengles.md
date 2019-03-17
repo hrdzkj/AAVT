@@ -155,4 +155,50 @@ SurfaceTexture的getTransformMatrix方法可以获取到图像数据流的坐标
 在现代OpenGL中，我们必须定义至少一个顶点着色器和一个片段着色器（因为GPU中没有默认的顶点/片段着色器）。 
 
 void glBindFramebuffer(GLenum target, GLuint id)
-第一个参数target应该是GL_FRAMEBUFFER，第二个参数是FBO的ID号。一旦FBO被绑定，之后的所有的OpenGL操作都会对当前所绑定的FBO造成影响。ID号为0表示缺省帧缓存，即默认的window提供的帧缓存。因此，在glBindFramebuffer()中将ID号设置为0可以解绑定当前FBO。
+第一个参数target应该是GL_FRAMEBUFFER，第二个参数是FBO的ID号。一旦FBO被绑定，之后的所有的OpenGL操作都会对当前所绑定的FBO造成影响。
+ID号为0表示缺省帧缓存，即默认的window提供的帧缓存。因此，在glBindFramebuffer()中将ID号设置为0可以解绑定当前FBO。
+
+GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D等就是很多变量，当使用glBindTexture函数，我们就会使用一张纹理对这些变量进行赋值。
+而之后我们非常可能还会调用下面类似的函数：
+glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,512,512,0,GL_RGBA,
+GL_UNSIGNED_BYTE,NULL);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+GL_LINEAR);
+这些函数里面的GL_TEXTURE_2D就等价与我们之前绑定的纹理，所以我们对GL_TEXTURE_2D的操作就会影响到之前的纹理，这和C++中的引用有点类似。
+同理：GL_FRAMEBUFFER类似
+
+
+/ * float[] 目标数组。只要的有16个元素，才能存储正交投影矩阵
+ * mOffset 结果矩阵起始的偏移量
+ * left    x轴的最小范围
+ * right   x轴的最大范围
+ * bottom  y轴的最小范围
+ * top     y轴的最大范围
+ * near    z轴的最小范围
+ * far     z轴的最大范围
+**/
+   //投影矩阵
+   private float[] mProjectionMatrix = new float[16];
+
+   @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        super.onSurfaceChanged(gl, width, height);
+        //主要还是长宽进行比例缩放
+        float aspectRatio = width > height ?
+                (float) width / (float) height :
+                (float) height / (float) width;
+
+        if (width > height) {
+            //横屏。需要设置的就是左右。
+            Matrix.orthoM(mProjectionMatrix, 0, -aspectRatio, aspectRatio, -1, 1f, -1.f, 1f);
+        } else {
+            //竖屏。需要设置的就是上下
+            Matrix.orthoM(mProjectionMatrix, 0, -1, 1f, -aspectRatio, aspectRatio, -1.f, 1f);
+        }
+    }
+ https://www.cnblogs.com/hefee/p/3820610.html
+
+
+ 理解：width > height 小的为标准，小的为1
