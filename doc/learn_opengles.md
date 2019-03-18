@@ -205,6 +205,7 @@ GL_LINEAR);
  normalized device coordinates正常设备坐标：这个是OpenGL的坐标，宽和高的范围都是[-1,+1]
  virtual coordinate space虚拟坐标空间：这个是根据屏幕纵横比调整之后的坐标，宽的范围为[-1,+1]，高的范围为[-height/width,+height/width]，其中height是屏幕的高，width是屏幕的宽。
 normalized_device_coordinates = orthoM(virtual_coordinate_space); ？？？？？
+这个正交投影矩阵会把所有在左右之间，上下之间和远近之间的事物映射到归一化设备坐标中从-1到1的范围，在这个范围内所有事物在屏幕上都是可见的。
 https://juejin.im/post/5aefdb2c51882522835e6542
 
 
