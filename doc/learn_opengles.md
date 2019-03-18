@@ -202,6 +202,10 @@ GL_LINEAR);
 
 
  理解：width > height 小的为标准，小的为1
+ normalized device coordinates正常设备坐标：这个是OpenGL的坐标，宽和高的范围都是[-1,+1]
+ virtual coordinate space虚拟坐标空间：这个是根据屏幕纵横比调整之后的坐标，宽的范围为[-1,+1]，高的范围为[-height/width,+height/width]，其中height是屏幕的高，width是屏幕的宽。
+normalized_device_coordinates = orthoM(virtual_coordinate_space); ？？？？？
+https://juejin.im/post/5aefdb2c51882522835e6542
 
 
 
