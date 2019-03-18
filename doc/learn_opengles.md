@@ -27,8 +27,6 @@ imediaDataSource---自定义数据源，也是只能从源头或数据，不适�
 先调研软解码的效率，软件编码效率（android avframe压缩录像）。
 
 
-如何和厂家联系沟通
-
 GL_TEXTURE_EXTERNAL_OES， 该Target也是主要用于从EGLImage中产生纹理的情景
 updateTexImage()方法会将ImageStream的图片数据更新到GL_OES_EGL_image_external类型的纹理中。
 每当使用该类纹理对纹理对象进行绑定时，需使用GL_TEXTURE_EXTERNAL_OES而不是GL_TEXTURE_2D。
@@ -135,7 +133,7 @@ java层实现：湖广午王 https://blog.csdn.net/junzia/article/details/779246
      解释https://www.cnblogs.com/designyourdream/p/6739413.html
 
 应用程序就可以调用updateTexImage将图像数据先送到Texture，之后就可以调用opengl接口做些具体的业务了。
-Camera-->SurfaceTexture--->OnFrameAvailableListener--->updateTexImage
+Camera-->SurfaceTexture--->OnFra2 巴伊亚州洒下meAvailableListener--->updateTexImage
 
 OnDrawFrame方法中将更新后的纹理渲染到屏幕。
 
@@ -157,6 +155,8 @@ SurfaceTexture的getTransformMatrix方法可以获取到图像数据流的坐标
 void glBindFramebuffer(GLenum target, GLuint id)
 第一个参数target应该是GL_FRAMEBUFFER，第二个参数是FBO的ID号。一旦FBO被绑定，之后的所有的OpenGL操作都会对当前所绑定的FBO造成影响。
 ID号为0表示缺省帧缓存，即默认的window提供的帧缓存。因此，在glBindFramebuffer()中将ID号设置为0可以解绑定当前FBO。
+类似：glBindBuffer，GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0)是取消绑定；
+     glBindTexture，GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0)取消绑定
 
 GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D等就是很多变量，当使用glBindTexture函数，我们就会使用一张纹理对这些变量进行赋值。
 而之后我们非常可能还会调用下面类似的函数：
@@ -169,7 +169,7 @@ GL_LINEAR);
 这些函数里面的GL_TEXTURE_2D就等价与我们之前绑定的纹理，所以我们对GL_TEXTURE_2D的操作就会影响到之前的纹理，这和C++中的引用有点类似。
 同理：GL_FRAMEBUFFER类似
 
-
+void android.opengl.Matrix.orthoM(float[] m, int mOffset, float left, float right, float bottom, float top, float near, float far)
 / * float[] 目标数组。只要的有16个元素，才能存储正交投影矩阵
  * mOffset 结果矩阵起始的偏移量
  * left    x轴的最小范围
@@ -207,6 +207,13 @@ GL_LINEAR);
 normalized_device_coordinates = orthoM(virtual_coordinate_space); ？？？？？
 这个正交投影矩阵会把所有在左右之间，上下之间和远近之间的事物映射到归一化设备坐标中从-1到1的范围，在这个范围内所有事物在屏幕上都是可见的。
 https://juejin.im/post/5aefdb2c51882522835e6542
+
+
+2.纹理坐标系
+是以纹理左下角为坐标原点，向右为x正轴方向，向上为y轴正轴方向，总长度是1
+
+图像颠倒的原因：
+https://www.jianshu.com/p/355137fa2817
 
 
 
