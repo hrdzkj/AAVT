@@ -126,6 +126,8 @@ java层实现：湖广午王 https://blog.csdn.net/junzia/article/details/779246
            https://blog.csdn.net/junzia/article/details/78154648
            https://blog.csdn.net/junzia/article/details/54018671
           https://blog.csdn.net/STN_LCD/article/details/74926376
+          https://www.jianshu.com/p/3c479c0f4876
+          
 共享纹理：https://blog.csdn.net/cmshao/article/details/80060546
       https://cloud.tencent.com/developer/article/1369883
       
@@ -208,6 +210,24 @@ normalized_device_coordinates = orthoM(virtual_coordinate_space); ？？？？�
 这个正交投影矩阵会把所有在左右之间，上下之间和远近之间的事物映射到归一化设备坐标中从-1到1的范围，在这个范围内所有事物在屏幕上都是可见的。
 https://juejin.im/post/5aefdb2c51882522835e6542
 
+1.) 为什么有时候改变观测点的位置setLookAtM,有时候进行改变物体位置（平移，缩放，旋转等）。
+答案：高中我们学过相对运动，就是说，改变观测点的位置与改变物体位置都可以达到等效的运动效果。因此，在OpenGL中，这两种变换本质上用的是同一个函数。
+glOrthof， setLookAtM，glFrustumf这几个函数本质都是设置好视景体，控制好那些范围可见。
+
+
+1) 为什么又时候设置视景体即可，又时候设置NDC坐标。
+答案：设置 最终也会转换到NDC坐标。
+原因是：投影变换(Projection Transformation)中也分为两个部分，第一个部分是将上个阶段得到的所有数据从观察坐标转换到裁剪坐标，
+第二个部分是将这些裁剪坐标通过除以w分量的方式(齐次坐标)转换到归一化设备坐标（NDC）。由于这个过程在OpenGL ES中是自动进行的，
+我们不需要针对它来编程，因此我们经常把它和投影变换放在一起来理解。我们可以不太严谨地暂且认为，相机坐标经过了一个投影变换，就直接得到NDC了.ß
+NDC定义了一个边长为2的立方体，每个边从-1到1，NDC中的每个坐标都位于这个立方体内（落在立方体外的顶点在前一步已经被裁剪掉了）。
+值得注意的是，虽然NDC包含x、y、z三个坐标轴，但它主要表达了顶点在xOy平面内的位置，x和y坐标它们最终会对应到屏幕的像素位置上去。
+而z坐标只是为了表明深度关系，谁在前谁在后（前面的挡住后面的），因此z坐标只是相对大小有意义，z的绝对数值是多大并不具有现实的意义。
+
+辅助：在OpenGL ES中，NDC坐标-->屏幕坐标,这个变换也是自动完成的，但需要我们通过glViewport接口来指定绘制视口（屏幕）的大小。
+
+ 
+
 
 2.纹理坐标系
 是以纹理左下角为坐标原点，向右为x正轴方向，向上为y轴正轴方向，总长度是1
@@ -215,6 +235,22 @@ https://juejin.im/post/5aefdb2c51882522835e6542
 图像颠倒的原因：
 https://www.jianshu.com/p/355137fa2817
 
+
+3.)纹理单元GL_TEXTURE0,GL_TEXTURE_EXTERNAL_OES的关系：
+答案：显卡中有N个纹理单元（具体数目依赖你的显卡能力），每个纹理单元（GL_TEXTURE0、GL_TEXTURE1等）都有GL_TEXTURE_1D、GL_TEXTURE_2D等，如下：
+   struct TextureUnit
+   {
+       GLuint targetTexture1D;
+       GLuint targetTexture2D;
+       GLuint targetTexture3D;
+       GLuint targetTextureCube;
+       ...
+   };
+
+4.)如何贴图
+顶点定义几何坐标，定顶点在屏幕上绘制的位置。
+而纹理坐标决定纹理图像中的哪一个纹素赋予该顶点，定义纹理坐标顺序，这很关键。
+纹理图片的四个角的坐标分别是：(0,0)、(1,0)、(0,1)、(1,1)，分别对应左下、右下、左上、右上四个顶点
 
 
 
